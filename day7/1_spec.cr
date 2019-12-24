@@ -19,6 +19,6 @@ describe "Day7" do
 
   it "real input" do
     program = File.new("./input.txt").gets_to_end
-    max_thruster(program).should eq(65210)
+    max_thruster(program).should eq(21860)
   end
 end

@@ -2,7 +2,6 @@ require "./intcode_computer.cr"
 
 def max_thruster(program : String) : Int32
   max = -1
-  computer = IntcodeComputer.new(program)
   0.to(4) do |inputA|
     0.to(4) do |inputB|
       0.to(4) do |inputC|
@@ -10,11 +9,11 @@ def max_thruster(program : String) : Int32
           0.to(4) do |inputE|
             next unless [inputA, inputB, inputC, inputD, inputE].uniq.size == 5
 
-            resultA = computer.process([inputA, 0])
-            resultB = computer.process([inputB, resultA])
-            resultC = computer.process([inputC, resultB])
-            resultD = computer.process([inputD, resultC])
-            thruster = computer.process([inputE, resultD])
+            resultA  = IntcodeComputer.new(program).process([inputA, 0])
+            resultB  = IntcodeComputer.new(program).process([inputB, resultA])
+            resultC  = IntcodeComputer.new(program).process([inputC, resultB])
+            resultD  = IntcodeComputer.new(program).process([inputD, resultC])
+            thruster = IntcodeComputer.new(program).process([inputE, resultD])
 
             max = thruster if thruster > max
           end

@@ -1,95 +1,106 @@
 class IntcodeComputer
   @program : String
   @instructions : Array(Int32)
+  @index : Int32
+
+  getter? halted : Bool
 
   def initialize(@program : String)
     @instructions = @program.split(",").map(&.to_i)
+    @index = 0
+    @halted = false
+  end
+
+  def process_until_halt(inputs : Array(Int32)) : Int32
+    result = -1
+    while !@halted
+      last_output = process(inputs)
+      result = last_output if result == -1
+    end
+    result
   end
 
   def process(inputs : Array(Int32)) : Int32
-    # We don't want to mutate the original program
-    instructions = @instructions.dup
-    result = -1
     inputIndex = 0
 
-    i = 0
-    while i < instructions.size
-      op, first_pm, second_pm, third_pm = read_operation_at(i, instructions)
+    while @index < @instructions.size && !@halted
+      op, first_pm, second_pm, third_pm = read_operation_at(@index)
 
       # OPs 1 and 2 will receive 3 input values
       # 3 and 4 will receive just 1
       case op
       when "01", "02"
-        num1 = first_pm == "0" ? instructions[instructions[i + 1]] : instructions[i + 1]
-        num2 = second_pm == "0" ? instructions[instructions[i + 2]] : instructions[i + 2]
+        num1 = first_pm == "0" ? @instructions[@instructions[@index + 1]] : @instructions[@index + 1]
+        num2 = second_pm == "0" ? @instructions[@instructions[@index + 2]] : @instructions[@index + 2]
 
         if op == "01"
-          instructions[instructions[i + 3]] = num1 + num2
+          @instructions[@instructions[@index + 3]] = num1 + num2
         else
-          instructions[instructions[i + 3]] = num1 * num2
+          @instructions[@instructions[@index + 3]] = num1 * num2
         end
 
-        i += 4
+        @index += 4
       when "03", "04"
-        num1 = first_pm == "0" ? instructions[instructions[i + 1]] : instructions[i + 1]
+        num1 = first_pm == "0" ? @instructions[@instructions[@index + 1]] : @instructions[@index + 1]
 
         if op == "03"
-          instructions[instructions[i + 1]] = inputs[inputIndex]
+          @instructions[@instructions[@index + 1]] = inputs[inputIndex]
           inputIndex += 1
         else
-          result = num1
+          @index += 2
+          return num1
         end
 
-        i += 2
+        @index += 2
       when "05", "06"
-        num1 = first_pm == "0" ? instructions[instructions[i + 1]] : instructions[i + 1]
-        num2 = second_pm == "0" ? instructions[instructions[i + 2]] : instructions[i + 2]
+        num1 = first_pm == "0" ? @instructions[@instructions[@index + 1]] : @instructions[@index + 1]
+        num2 = second_pm == "0" ? @instructions[@instructions[@index + 2]] : @instructions[@index + 2]
 
         if op == "05"
           if num1 != 0
-            i = num2
+            @index = num2
           else
-            i += 3
+            @index += 3
           end
         elsif op == "06"
           if num1 == 0
-            i = num2
+            @index = num2
           else
-            i += 3
+            @index += 3
           end
         end
       when "07", "08"
-        num1 = first_pm == "0" ? instructions[instructions[i + 1]] : instructions[i + 1]
-        num2 = second_pm == "0" ? instructions[instructions[i + 2]] : instructions[i + 2]
+        num1 = first_pm == "0" ? @instructions[@instructions[@index + 1]] : @instructions[@index + 1]
+        num2 = second_pm == "0" ? @instructions[@instructions[@index + 2]] : @instructions[@index + 2]
 
         if op == "07"
           if num1 < num2
-            instructions[instructions[i + 3]] = 1
+            @instructions[@instructions[@index + 3]] = 1
           else
-            instructions[instructions[i + 3]] = 0
+            @instructions[@instructions[@index + 3]] = 0
           end
         elsif op == "08"
           if num1 == num2
-            instructions[instructions[i + 3]] = 1
+            @instructions[@instructions[@index + 3]] = 1
           else
-            instructions[instructions[i + 3]] = 0
+            @instructions[@instructions[@index + 3]] = 0
           end
         end
 
-        i += 4
+        @index += 4
       else
-        break
+        halt!
       end
     end
 
-    result
+    -1
   end
 
-  private def read_operation_at(index : Int32, instructions : Array(Int32)) : Array(String)
+  private def read_operation_at(index : Int32) : Array(String)
     # full_op contains:
     # - Operation to execute [1, 2, 3, 4]
     # - Parameter mode for inputs and ouput, can be either positional or immediate
-    full_op = instructions[index].to_s.rjust(5, '0')
+    full_op = @instructions[index].to_s.rjust(5, '0')
 
     # OPs can be one of:
     # - 1 Sum two values
@@ -105,5 +116,9 @@ class IntcodeComputer
     third_pm = full_op[0].to_s
 
     [op, first_pm, second_pm, third_pm]
+  end
+
+  private def halt!
+    @halted = true
   end
 end
