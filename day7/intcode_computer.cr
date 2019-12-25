@@ -2,12 +2,18 @@ class IntcodeComputer
   @program : String
   @instructions : Array(Int32)
   @index : Int32
+  @input_index : Int32
+
+  # Stores the LAST output of the computer
+  getter output : Int32
 
   getter? halted : Bool
 
   def initialize(@program : String)
     @instructions = @program.split(",").map(&.to_i)
     @index = 0
+    @input_index = -0
+    @output = -1
     @halted = false
   end
 
@@ -21,8 +27,6 @@ class IntcodeComputer
   end
 
   def process(inputs : Array(Int32)) : Int32
-    inputIndex = 0
-
     while @index < @instructions.size && !@halted
       op, first_pm, second_pm, third_pm = read_operation_at(@index)
 
@@ -44,10 +48,10 @@ class IntcodeComputer
         num1 = first_pm == "0" ? @instructions[@instructions[@index + 1]] : @instructions[@index + 1]
 
         if op == "03"
-          @instructions[@instructions[@index + 1]] = inputs[inputIndex]
-          inputIndex += 1
+          @instructions[@instructions[@index + 1]] = read_next_input(inputs)
         else
           @index += 2
+          @output = num1
           return num1
         end
 
@@ -93,7 +97,7 @@ class IntcodeComputer
       end
     end
 
-    -1
+    @output
   end
 
   private def read_operation_at(index : Int32) : Array(String)
@@ -120,5 +124,12 @@ class IntcodeComputer
 
   private def halt!
     @halted = true
+  end
+
+  private def read_next_input(inputs : Array(Int32)) : Int32
+    input = inputs[@input_index]
+    @input_index += 1
+
+    input
   end
 end
