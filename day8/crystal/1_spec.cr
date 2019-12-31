@@ -7,7 +7,7 @@ describe "Day8" do
   end
 
   it "real input" do
-    input = File.new("./input.txt")
+    input = File.new("../input.txt")
       .gets_to_end
       .split("\n")
       .reject { |string| string.empty? }
