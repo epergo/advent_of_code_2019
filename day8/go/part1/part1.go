@@ -22,7 +22,7 @@ func Verify(input string, width, height int) (result int) {
 // i.e: (["1", "2", "3", "4"], 1, 2) => [["1", "2"], ["3", "4"]]
 func extractLayers(input []string, width, height int) (layers [][]string) {
 	batchSize := width * height
-	for batchSize < len(input) {
+	for batchSize <= len(input) {
 		// https://github.com/golang/go/wiki/SliceTricks#batching-with-minimal-allocation
 		input, layers = input[batchSize:], append(layers, input[0:batchSize:batchSize])
 	}

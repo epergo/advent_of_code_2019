@@ -15,7 +15,7 @@ func TestVerify(t *testing.T) {
 	})
 
 	t.Run("example 2", func(t *testing.T) {
-		b, _ := ioutil.ReadFile("../input.txt")
+		b, _ := ioutil.ReadFile("../../input.txt")
 		got := Verify(string(b), 25, 6)
 		want := 1806
 		if got != want {
